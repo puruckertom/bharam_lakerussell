@@ -1,0 +1,48 @@
+---
+title: "Statistical Analyses for Brigette Haram Lake Russell data"
+output:
+#  pdf_document:
+#    toc: yes
+  html_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Introduction
+========================================================
+Data set, statistical analyses, graphics and inference concerning bird abundance, species richness in the presence/absence of Hydrilla.
+
+Distribution
+========================================================
+This page is not yet public on rpubs:
+http://rpubs.com/puruckertom/
+
+The git repo holding this code is available at:
+https://github.com/puruckertom/bharam_lakerussell
+
+Computational environment
+========================================================
+
+```{r eval=FALSE, echo=FALSE}
+#library(installr) #windows only currently
+#updateR()
+```
+Version and installed libraries.
+```{r eval=TRUE, echo=TRUE}
+R.Version()$version.string
+Sys.info()[4]
+#check to see if needed packages are installed
+list.of.packages <- c("ggplot2", "dplyr")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+#load relevant packages
+library(MASS)
+library(dplyr, warn.conflicts = FALSE)
+library(ggplot2)
+```
+
+
