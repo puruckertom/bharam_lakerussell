@@ -33,8 +33,12 @@ Computational environment
 ```
 Version and installed libraries.
 ```{r eval=TRUE, echo=TRUE}
-R.Version()$version.string
-Sys.info()[4]
+verbose_output = TRUE
+
+if(verbose_output){
+  print(Sys.info()[4])
+  R.Version()$version.string
+}
 #check to see if needed packages are installed
 list.of.packages <- c("ggplot2", "dplyr")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -43,6 +47,66 @@ if(length(new.packages)) install.packages(new.packages)
 library(MASS)
 library(dplyr, warn.conflicts = FALSE)
 library(ggplot2)
+
+if(verbose_output){
+  print("list of loaded packages: ")
+  print((.packages()))
+}
 ```
 
+```{r eval=TRUE, echo=FALSE}
+if(Sys.info()[4]=="DZ2626UTPURUCKE"){
+  lake_russell <- "k:\\git\\bharam_lakerussell\\"
+}
 
+if(Sys.info()[4]=="stp-air.local"){
+  lake_russell <- path.expand("~/git/bharam_lakerussell/")
+}
+
+lr_data <- paste(lake_russell, "data_in/", sep="")
+```
+
+Observational data
+========================================================
+Original file with observational data: 
+https://github.com/puruckertom/bharam_lakerussell/blob/master/data_in/lakerussell_data.txt
+
+```{r eval=TRUE, echo=TRUE}
+##################
+#the data sets
+##################
+#everything
+file.exists(paste(lr_data,"lakerussell_data.csv",sep=""))
+lr_obs <- read.table(paste(lr_data,"lakerussell_data.csv",sep=""), header = TRUE, sep = ",")
+str(lr_obs)
+```
+
+```{r eval=TRUE, echo=TRUE}
+lr.nohydrilla <- lr_obs[which(lr_obs$Hydrilla==1),]
+lr.hydrilla <- lr_obs[which(lr_obs$Hydrilla==2),]
+```
+
+```{r eval=TRUE, echo=TRUE}
+pvalues.birddensity <- rep(NA, 1000)
+for(i in 1:1000){
+  nohydrilla.birddensity <- lr.nohydrilla$Bird.ha
+  hydrilla.birddensity <- sample(lr.hydrilla$Bird.ha,size=22)
+  #exact suppresses error warnings
+  x <- wilcox.test(nohydrilla.birddensity, hydrilla.birddensity,paired=TRUE,exact=FALSE)$p.value
+  pvalues.birddensity[i] <- x
+}
+hist(pvalues.birddensity)
+paste("median = ", median(pvalues.birddensity))
+```
+```{r eval=TRUE, echo=TRUE}
+pvalues.birdabundance <- rep(NA, 1000)
+for(i in 1:1000){
+  nohydrilla.birdabundance <- lr.nohydrilla$Species.ha
+  hydrilla.birdabundance <- sample(lr.hydrilla$Species.ha,size=22)
+  #exact suppresses error warnings
+  x <- wilcox.test(nohydrilla.birdabundance, hydrilla.birdabundance,paired=TRUE,exact=FALSE)$p.value
+  pvalues.birdabundance[i] <- x
+}
+hist(pvalues.birdabundance)
+paste("median = ", median(pvalues.birdabundance))
+```
