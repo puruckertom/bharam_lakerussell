@@ -16,10 +16,14 @@ Introduction
 ========================================================
 Data set, statistical analyses, graphics and inference concerning bird abundance, species richness in the presence/absence of Hydrilla.
 
+Citation:
+R Core Team (2017). R: A language and environment for statistical computing. R Foundation for Statistical Computing,
+  Vienna, Austria. URL https://www.R-project.org/.
+
 Distribution
 ========================================================
 This page is not yet public on rpubs:
-http://rpubs.com/puruckertom/
+http://rpubs.com/puruckertom/lake_thurmond
 
 The git repo holding this code is available at:
 https://github.com/puruckertom/bharam_lakerussell
@@ -47,6 +51,7 @@ if(length(new.packages)) install.packages(new.packages)
 library(MASS)
 library(dplyr, warn.conflicts = FALSE)
 library(ggplot2)
+library(BSDA)
 
 if(verbose_output){
   print("list of loaded packages: ")
@@ -71,6 +76,8 @@ Observational data
 Original file with observational data: 
 https://github.com/puruckertom/bharam_lakerussell/blob/master/data_in/lakerussell_data.txt
 
+If only x is given, or if both x and y are given and paired is TRUE, a Wilcoxon signed rank test of the null that the distribution of x (in the one sample case) or of x - y (in the paired two sample case) is symmetric about mu is performed.
+
 ```{r eval=TRUE, echo=TRUE}
 ##################
 #the data sets
@@ -86,6 +93,23 @@ lr.nohydrilla <- lr_obs[which(lr_obs$Hydrilla==1),]
 lr.hydrilla <- lr_obs[which(lr_obs$Hydrilla==2),]
 ```
 
+Statistics
+========================================================
+wilcox test as a generalization of the binomial test, bootstrapped test statistic by randomly sampling 
+the hydrilla to pair with the 22 nonhydrilla samples for each realization, repeated 1000 times
+to create a distribution of the test statistic
+
+the null is that the median of the differences of bird abundance and/or density (between paired 
+hydrilla and nonhydrilla samples) is equal to zero, ties are therefore equal to zero and
+should not be discarded
+
+wilcoxon rank rum (= mann-whitney u) can also handle unequal sample sizes
+
+the sign.test does not reliably return a htest object as it is supposed to:
+http://r.789695.n4.nabble.com/SIGN-test-td4654434.html
+
+Inference
+========================================================
 ```{r eval=TRUE, echo=TRUE}
 pvalues.birddensity <- rep(NA, 1000)
 for(i in 1:1000){
@@ -93,6 +117,7 @@ for(i in 1:1000){
   hydrilla.birddensity <- sample(lr.hydrilla$Bird.ha,size=22)
   #exact suppresses error warnings
   x <- wilcox.test(nohydrilla.birddensity, hydrilla.birddensity,paired=TRUE,exact=FALSE)$p.value
+  y <- SIGN.test(nohydrilla.birddensity, hydrilla.birddensity, md = 0, alternative = "two.sided", conf.level = 0.95)
   pvalues.birddensity[i] <- x
 }
 hist(pvalues.birddensity)
@@ -103,8 +128,11 @@ pvalues.birdabundance <- rep(NA, 1000)
 for(i in 1:1000){
   nohydrilla.birdabundance <- lr.nohydrilla$Species.ha
   hydrilla.birdabundance <- sample(lr.hydrilla$Species.ha,size=22)
+  delta.birdabundance <- hydrilla.birdabundance - nohydrilla.birdabundance
   #exact suppresses error warnings
-  x <- wilcox.test(nohydrilla.birdabundance, hydrilla.birdabundance,paired=TRUE,exact=FALSE)$p.value
+  #z <- wilcox.test(nohydrilla.birdabundance, hydrilla.birdabundance,paired=TRUE,exact=FALSE)$p.value
+  #y <- SIGN.test(nohydrilla.birdabundance, hydrilla.birdabundance, md = 0, alternative = "two.sided", conf.level = 0.95)
+  x <- binom.test(18,22,p=0.5,alternative="two.sided",conf.level=0.95)
   pvalues.birdabundance[i] <- x
 }
 hist(pvalues.birdabundance)
